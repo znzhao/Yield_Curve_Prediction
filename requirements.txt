@@ -5,4 +5,4 @@ numpy
 matplotlib
 tqdm
 scipy
-sklearn
+scikit-learn
