@@ -48,9 +48,9 @@ def createDisplayer():
                     preddata = predictor.forecast(periods=periods).tail(1)
 
         if pred == 'Linear LSCT':
-            days = st.sidebar.select_slider('Training Window (years)', range(1,1+252*10), 252)
-            lags = st.sidebar.select_slider('Lags (Days)', range(1, 11), 5)
             lambdas = st.sidebar.slider('Decomposition Kernel ($\lambda$)', 0.0, 1.0, 0.498)
+            days = st.sidebar.select_slider('Training Window (Days)', range(1,1+252*10), 252)
+            lags = st.sidebar.select_slider('Lags (Days)', range(1, 11), 5)
             logTrans = st.sidebar.toggle('Log Transform', value = False)
 
             predictor = YieldPredictor('Linear LSCT', 
@@ -92,8 +92,8 @@ def createDisplayer():
     st.plotly_chart(fig)
     st.markdown('''
                 ##### Reference
-                - Diebold, Francis X., and Canlin Li. "Forecasting the term structure of government bond yields." Journal of econometrics [link](https://www.sciencedirect.com/science/article/abs/pii/S0304407605000795)
-                - Xuyang Ma, "The Twist Factor of Yields", Advances in Economics and Business Vol. 5(7), pp. 411 - 422 [link](https://www.hrpub.org/journals/article_info.php?aid=6167)
+                - Diebold, Francis X., and Canlin Li. "Forecasting the term structure of government bond yields." Journal of econometrics :link:[link](https://www.sciencedirect.com/science/article/abs/pii/S0304407605000795)
+                - Xuyang Ma, "The Twist Factor of Yields", Advances in Economics and Business :link:[link](https://www.hrpub.org/journals/article_info.php?aid=6167)
                 ''')
     
     
