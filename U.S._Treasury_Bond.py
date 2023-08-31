@@ -43,7 +43,7 @@ def createDisplayer():
                 ''')
     st.divider()
     st.markdown('''
-                Created by Zhenning Zhao      Visit Personal Website [<img src="https://raw.githubusercontent.com/znzhao/Yield_Curve_Predition/main/icon/link.png">](https://znzhao.github.io/)
+                Created by Zhenning Zhao [:link:](https://znzhao.github.io/)
                 ''')
 if __name__ == "__main__":
     createDisplayer()
