@@ -44,6 +44,9 @@ def createDisplayer():
     preddata = preddata.T
     preddata.columns = ['Predicted Data']
 
+    st.sidebar.divider()
+    st.sidebar.markdown('''Created by Zhenning Zhao :link:[Website](https://znzhao.github.io/)''')
+
     if showpred:
         dispdata = pd.merge(truedata, preddata, left_index=True, right_index=True)
     else:
@@ -66,6 +69,7 @@ def createDisplayer():
                 - Diebold, Francis X., and Canlin Li. "Forecasting the term structure of government bond yields." Journal of econometrics [link](https://www.sciencedirect.com/science/article/abs/pii/S0304407605000795)
                 - Xuyang Ma, "The Twist Factor of Yields", Advances in Economics and Business Vol. 5(7), pp. 411 - 422 [link](https://www.hrpub.org/journals/article_info.php?aid=6167)
                 ''')
+    
     
 if __name__ == "__main__":
     createDisplayer()

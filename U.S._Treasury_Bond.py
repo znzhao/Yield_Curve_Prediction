@@ -22,6 +22,10 @@ def createDisplayer():
     columns = []
     for m in maturities:
         columns.append(st.sidebar.checkbox(m, value = True))
+    
+    st.sidebar.divider()
+    st.sidebar.markdown('''Created by Zhenning Zhao :link:[Website](https://znzhao.github.io/)''')
+    
     dispdata = data[(data.index >= DateRange[0]) & (data.index <= DateRange[1])]
     dispdata.columns = maturities
     dispcol = [dispdata.columns[i] for i, x in enumerate(columns) if x]
@@ -41,9 +45,6 @@ def createDisplayer():
                 ##### Data Source
                 - U.S. Department of the Treasury [link](https://home.treasury.gov/policy-issues/financing-the-government/interest-rate-statistics)
                 ''')
-    st.divider()
-    st.markdown('''
-                Created by Zhenning Zhao [:link:](https://znzhao.github.io/)
-                ''')
+                
 if __name__ == "__main__":
     createDisplayer()
