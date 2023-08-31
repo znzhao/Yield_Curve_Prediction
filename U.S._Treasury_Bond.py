@@ -41,5 +41,9 @@ def createDisplayer():
                 ##### Data Source
                 - U.S. Department of the Treasury [link](https://home.treasury.gov/policy-issues/financing-the-government/interest-rate-statistics)
                 ''')
+    st.divider()
+    st.markdown('''
+                Created by Zhenning Zhao      Visit Personal Website [<img src="https://raw.githubusercontent.com/znzhao/Yield_Curve_Predition/main/icon/link.png">](https://znzhao.github.io/)
+                ''')
 if __name__ == "__main__":
     createDisplayer()
