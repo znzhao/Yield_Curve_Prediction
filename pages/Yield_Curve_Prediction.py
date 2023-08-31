@@ -1,4 +1,5 @@
 import datetime
+import copy
 import numpy as np
 import streamlit as st
 import plotly.express as px
@@ -15,37 +16,62 @@ def createDisplayer():
     startdate = max(data.index).to_pydatetime() - datetime.timedelta(weeks=52*10)
     middate = max(data.index).to_pydatetime() - datetime.timedelta(weeks=52*5)
     enddate = max(data.index).to_pydatetime()
+
+    periods = st.select_slider('Forecast Period', [1, 2, 3, 4, 5], 1)
     
-    ycdate = st.slider('Yield Curve Date Range', mindate, maxdate, enddate)
-    showpred = st.sidebar.checkbox('Show Predictions', value = True)
-    pred = st.sidebar.selectbox('Prediction Model', ['Random Walk', 'Lagged LSCT'], disabled = not showpred)
+    ycdate = st.slider('Yield Curve Date', mindate, maxdate, enddate)
+    showpred = st.sidebar.toggle('Show Predictions', value = True)
+    pred = st.sidebar.selectbox('Prediction Model', ['Random Walk', 'Lagged LSCT', 'Linear LSCT'], disabled = not showpred)
     
     truedata = data[data.index<=ycdate]
     truedata = truedata.tail(1)
+
     truedata.columns = maturities
     truedata = truedata.T
     truedata.columns = ['True Data']
 
-    dirpath = './Output/PredData/'
-    if pred == 'Random Walk':
-        predictor = YieldPredictor(start = (ycdate - datetime.timedelta(days=7)).strftime("%Y%m%d"), end = ycdate.strftime("%Y%m%d"))
-        preddata = predictor.fit()
-        
-    if pred == 'Lagged LSCT':
-        lambdas = st.sidebar.slider('Decomposition Kernel $\lambda$', 0.0, 1.0, 0.498)
-        predictor = YieldPredictor('Lagged LSCT', start = (ycdate - datetime.timedelta(days=7)).strftime("%Y%m%d"), end = ycdate.strftime("%Y%m%d"))
-        with st.sidebar:
-            with st.spinner('Model Refitting...'):
-                preddata = predictor.fit(lambdas = lambdas)
+    try:
+        if pred == 'Random Walk':
+            
+            predictor = YieldPredictor(start = (ycdate - datetime.timedelta(days=periods+7)).strftime("%Y%m%d"), 
+                                    end = (ycdate - datetime.timedelta(days=periods-1)).strftime("%Y%m%d"))
+            predictor.fit()
+            preddata = predictor.forecast(periods=periods).tail(1)
+        if pred == 'Lagged LSCT':
+            lambdas = st.sidebar.slider('Decomposition Kernel ($\lambda$)', 0.0, 1.0, 0.498)
+            predictor = YieldPredictor('Lagged LSCT', 
+                                    start = (ycdate - datetime.timedelta(days=periods+7)).strftime("%Y%m%d"), 
+                                    end = (ycdate - datetime.timedelta(days=periods-1)).strftime("%Y%m%d"))
+            with st.sidebar:
+                with st.spinner('Model Refitting...'):
+                    predictor.fit(lambdas = lambdas)
+                    preddata = predictor.forecast(periods=periods).tail(1)
 
-    preddata = preddata[preddata.index<=ycdate]
-    preddata = preddata.tail(1)
-    preddata.columns = maturities
-    preddata = preddata.T
-    preddata.columns = ['Predicted Data']
+        if pred == 'Linear LSCT':
+            days = st.sidebar.select_slider('Training Window (years)', range(1,1+252*10), 252)
+            lags = st.sidebar.select_slider('Lags (Days)', range(1, 11), 5)
+            lambdas = st.sidebar.slider('Decomposition Kernel ($\lambda$)', 0.0, 1.0, 0.498)
+            logTrans = st.sidebar.toggle('Log Transform', value = False)
+
+            predictor = YieldPredictor('Linear LSCT', 
+                                    start = (ycdate - datetime.timedelta(days=periods+7+days)).strftime("%Y%m%d"), 
+                                    end = (ycdate - datetime.timedelta(days=periods-1)).strftime("%Y%m%d"))
+            with st.sidebar:
+                with st.spinner('Model Refitting...'):
+                    predictor.fit(lambdas = lambdas, lags = lags, log = logTrans)
+                    preddata = predictor.forecast(periods=periods).tail(1)
+
+
+        preddata.columns = maturities
+        preddata = preddata.T
+        preddata.columns = ['Predicted Data']
+    except:
+        st.error('An error occurred during model training. Please check the parameter inputs.')
+        preddata = copy.deepcopy(truedata).applymap(lambda x: np.nan)
 
     st.sidebar.divider()
     st.sidebar.markdown('''Created by Zhenning Zhao :link:[Website](https://znzhao.github.io/)''')
+    
 
     if showpred:
         dispdata = pd.merge(truedata, preddata, left_index=True, right_index=True)

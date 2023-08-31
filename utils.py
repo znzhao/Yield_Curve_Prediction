@@ -2,6 +2,8 @@ import os
 import time
 import numpy as np
 
+maturities = [1/12, 2/12, 3/12, 4/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30]
+
 class Timer(object):
     def __init__(self, name=None, display = True):
         self.name = name

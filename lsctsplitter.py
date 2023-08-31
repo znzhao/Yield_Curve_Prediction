@@ -74,6 +74,7 @@ class LSCTsplitter(object):
                 self.factors.columns = ['level', 'slope', 'curvature', 'twist']
                 self.factors.index = data.index
                 self.savefactors()
+        return self
         
     
     def __objfunc(self, factors, trueys):

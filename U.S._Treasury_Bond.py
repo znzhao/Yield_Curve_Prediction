@@ -43,7 +43,7 @@ def createDisplayer():
     st.plotly_chart(fig)
     st.markdown('''
                 ##### Data Source
-                - U.S. Department of the Treasury [link](https://home.treasury.gov/policy-issues/financing-the-government/interest-rate-statistics)
+                - U.S. Department of the Treasury :link: [link](https://home.treasury.gov/policy-issues/financing-the-government/interest-rate-statistics)
                 ''')
                 
 if __name__ == "__main__":
