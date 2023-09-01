@@ -1,2 +1,2 @@
-# Yield_Curve_Predition
-Source File for Yield Curve Predictor
+# Yield_Curve_Prediction
+Source File for The Yield Curve Predictor
