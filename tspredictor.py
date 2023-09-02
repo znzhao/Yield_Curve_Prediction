@@ -6,11 +6,11 @@ import scipy
 import pandas as pd
 from lsctsplitter import loadAllYC, LSCTsplitter
 from utils import dropCommonNan, maturities
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.metrics import mean_squared_error
 
 class YieldPredictor(object):
-    def __init__(self, name = 'Baseline', X = [], start = None, end = None, display = False):
+    def __init__(self, name = 'Baseline', Xlist = [], start = None, end = None, display = False, *args, **kwargs):
         # initialize the output to be predicted
         self.Y = loadAllYC()
         self.model = name
@@ -22,28 +22,33 @@ class YieldPredictor(object):
             self.Y = self.Y[self.Y.index < end]
         self.columns = self.Y.columns
         self.index = self.Y.index
+        self.Xlist = Xlist
 
-        Xdata = []
-        if 'LSCT' in X:
-            path = './MktData/factors/factors.csv'
-            factors = pd.read_csv(path, index_col = 'date')
-            factors.index = pd.to_datetime(factors.index)
-            Xdata.append(factors)
+        if 'lambdas' in kwargs.keys():
+            self.lambdas = kwargs['lambdas']
+        else:
+            self.lambdas = 0.498            
+        if 'lags' in kwargs.keys():
+            self.lags = kwargs['lags']
+        else:
+            self.lags = 5
+        if 'log' in kwargs.keys():
+            self.log = kwargs['log']
+        else:
+            self.log = False
+
+        if ('LSCT' in self.Xlist) or (self.model == 'Lagged LSCT') or (self.model == 'Linear LSCT'):
+            self.lscsplitter = LSCTsplitter(self.lambdas)
+            self.lscsplitter.fit(data=self.Y, refit=False)
         
-        if len(Xdata) == 1:
-            self.X = Xdata[0]
-        elif len(Xdata) > 1:
-            self.X = Xdata[0]
-            for i in range(1, len(self.X)):
-                self.X = pd.merge(self.X, Xdata[i], left_index = True, right_index = True)
-    
+        self.rawX = []
+
     def __logTransform(self):
         self.minY = np.nanmin(self.Y.values)-1e-4
         self.Y = self.Y.applymap(lambda x: np.log(x+self.minY))
 
     def __expTransform(self, Y = None):
         if Y is None:
-            self.Y = self.Y.apply(lambda x: np.exp(x)-self.minY)
             self.Y = self.Y.apply(lambda x: np.exp(x)-self.minY)
             return self.Y
         else:
@@ -75,12 +80,6 @@ class YieldPredictor(object):
         return oos_pred
 
     def __fitLagLSCT(self, *args, **kwargs):
-        if 'lambdas' in kwargs.keys():
-            self.lambdas = kwargs['lambdas']
-        else:
-            self.lambdas = 0.498
-        self.lscsplitter = LSCTsplitter(self.lambdas)
-        self.lscsplitter.fit(data=self.Y, refit=False)
         self.pred = copy.deepcopy(self.lscsplitter.inverse().shift(1))
         return self.pred
     
@@ -91,36 +90,18 @@ class YieldPredictor(object):
         return pd.concat(oos_pred, axis=0).reset_index(drop=True)
 
     def __fitLinearLSCT(self, *args, **kwargs):
-        if 'lambdas' in kwargs.keys():
-            self.lambdas = kwargs['lambdas']
-        else:
-            self.lambdas = 0.498
-        if 'lags' in kwargs.keys():
-            self.lags = kwargs['lags']
-        else:
-            self.lags = 5
-        if 'log' in kwargs.keys():
-            self.log = kwargs['log']
-        else:
-            self.log = False
-        
-        self.lscsplitter = LSCTsplitter(self.lambdas)
-        self.lscsplitter.fit(data=self.Y, refit=False)
-
         if self.log:
             self.__logTransform()
         
         self.predmodel = LinearRegression()
-        
         self.X = []
         for lag in range(self.lags):
             shifted_factors = self.lscsplitter.factors.shift(lag+1)
             shifted_factors.columns = ['L{}'.format(lag+1) + x for x in shifted_factors.columns]
             self.X.append(shifted_factors)
         self.X = pd.concat(self.X, axis=1)
-        
+
         # deal with NaN values
-        print(self.Y)
         self.Y = self.Y[~self.X.isna().any(axis=1)]
         self.Y = self.Y.T
         maturity_names = self.Y.index
@@ -155,6 +136,78 @@ class YieldPredictor(object):
             oosX = oosX.reset_index(drop=True)
         return pd.concat(oos_pred, axis=0)
 
+    def __fitLinear(self, *args, **kwargs):
+        if 'kernel' in kwargs.keys():
+            kernel = kwargs['kernel']
+        else:
+            kernel = 1.0
+        if 'alpha' in kwargs.keys():
+            alpha = kwargs['alpha']
+        else:
+            alpha = 1.0
+
+        if self.log:
+            self.__logTransform()
+
+        if kernel == 'Linear':
+            self.predmodel = LinearRegression()
+        elif kernel == 'LASSO':
+            self.predmodel = Lasso(alpha = alpha)
+        elif kernel == 'Ridge':
+            self.predmodel = Ridge(alpha = alpha)
+        
+        self.X = []
+        if 'LSCT' in self.Xlist:
+            self.rawX.append(self.lscsplitter.factors)
+            self.rawX = pd.concat(self.rawX, axis=1)
+            for lag in range(self.lags):
+                shiftXs = self.rawX.shift(lag+1)
+                shiftXs.columns = ['L{}'.format(lag+1) + x for x in shiftXs.columns]
+                self.X.append(shiftXs)
+        if self.Xlist == []:
+            self.X = [pd.DataFrame({'Const': [0]*self.Y.shape[0]}, index=self.Y.index)]
+        print(self.X)
+        self.X = pd.concat(self.X, axis=1)
+        # deal with NaN values
+        self.Y = self.Y[~self.X.isna().any(axis=1)]
+        self.Y = self.Y.T
+        maturity_names = self.Y.index
+        self.Y.index = maturities
+        self.Y = self.Y.interpolate(method='index', axis=0, limit_direction = 'both')
+        self.Y.index = maturity_names
+        self.Y = self.Y.T
+        self.X = self.X[~self.X.isna().any(axis=1)]
+        
+        self.predmodel = self.predmodel.fit(X = self.X, y = self.Y)
+        self.pred = self.predmodel.predict(self.X)    
+        self.pred = pd.DataFrame(self.pred, columns=self.Y.columns)
+        if self.log:
+            self.pred = self.__expTransform(self.pred)
+        return self.pred
+    
+    def __forecastLinear(self, periods):
+        if 'LSCT' in self.Xlist:
+            oosX = pd.concat([self.lscsplitter.factors.tail(1), self.X.tail(1).iloc[:, :-4]], axis=1)
+            oosX.columns = self.X.columns
+            oosX = oosX.reset_index(drop=True)
+        if  self.Xlist == []:
+            oosX = self.X.tail(1)
+
+        oos_pred = []
+        for p in range(periods):
+            print(oosX)
+            pred = self.predmodel.predict(oosX)
+            pred = pd.DataFrame(pred, columns=self.Y.columns)
+            if self.log:
+                pred = self.__expTransform(pred)
+            oos_pred.append(pred)
+            if 'LSCT' in self.Xlist:
+                oosX = pd.concat([LSCTsplitter(lambdas = self.lambdas).fit(data=pred).factors, oosX.iloc[:, :-4]], axis=1)
+                oosX.columns = self.X.columns
+                oosX = oosX.reset_index(drop=True)
+        return pd.concat(oos_pred, axis=0)
+
+
     def fit(self, *args, **kwargs):
         if self.model == 'Baseline':
             return self.__fitBaseline()
@@ -162,8 +215,10 @@ class YieldPredictor(object):
             return self.__fitLagLSCT(*args, **kwargs)
         if self.model == 'Linear LSCT':
             return self.__fitLinearLSCT(*args, **kwargs)
+        if self.model == 'Linear Model':
+            return self.__fitLinear(*args, **kwargs)
         else:
-            raise Exception("model type [{}] not allowed. Potential models: [Baseline, ]")
+            raise Exception("model type [{}] not allowed. Potential models: [Baseline, Lagged LSCT, Linear LSCT, Linear Model]")
 
     def forecast(self, periods = 1):
         if self.model == 'Baseline':
@@ -172,8 +227,10 @@ class YieldPredictor(object):
             return self.__forecastLagLSCT(periods)
         if self.model == 'Linear LSCT':
             return self.__forecastLinearLSCT(periods)
+        if self.model == 'Linear Model':
+            return self.__forecastLinear(periods)
         else:
-            raise Exception("model type [{}] not allowed. Potential models: [Baseline, ]")
+            raise Exception("model type [{}] not allowed. Potential models: [Baseline, Lagged LSCT, Linear LSCT, Linear Model]")
 
     def evaluate(self):
         true_y, pred_y = dropCommonNan(self.Y.values, self.pred.values)
