@@ -41,6 +41,9 @@ class YieldPredictor(object):
             self.lscsplitter = LSCTsplitter(self.lambdas)
             self.lscsplitter.fit(data=self.Y, refit=False)
         
+        if ('Stock' in self.Xlist):
+            self.lscsplitter = LSCTsplitter(self.lambdas)
+            self.lscsplitter.fit(data=self.Y, refit=False)
         self.rawX = []
 
     def __logTransform(self):
