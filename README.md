@@ -1,8 +1,7 @@
-# Yield_Curve_Prediction
-Created by Zhenning Zhao, Contact the creator at [znzhao@utexas.edu](mailto:znzhao@utexas.edu)
-Source File for The Yield Curve Predictor
+# Yield Curve Predictor
+Created by Zhenning Zhao, Contact the creator at [znzhao@utexas.edu](mailto:znzhao@utexas.edu).
 
-Visit the website to run the yield curve predictor. [link](https://yield-curve-prediction.streamlit.app/) Please sign in with a streamlit cloud account to visit the website. Streamlit cloud service is free.
+Visit the website [link](https://yield-curve-prediction.streamlit.app/) to run the yield curve predictor. Please sign in with a streamlit cloud account to visit the website. Streamlit cloud service is free.
 
 The yield curve predictor cannot only plot the US treasury bond yield curve but also use customized models to predict the yield curve and run back tests. The current supported model includes:
 
