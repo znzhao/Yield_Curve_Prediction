@@ -41,11 +41,24 @@ class YieldPredictor(object):
             self.lscsplitter = LSCTsplitter(self.lambdas)
             self.lscsplitter.fit(data=self.Y, refit=False)
         
-        if ('Stock' in self.Xlist):
-            self.lscsplitter = LSCTsplitter(self.lambdas)
-            self.lscsplitter.fit(data=self.Y, refit=False)
         self.rawX = []
-
+        if 'Stock' in self.Xlist:
+            stock_data = pd.read_csv('https://raw.githubusercontent.com/znzhao/Yield_Curve_Prediction/main/MktData/stock/SP500.csv')
+            stock_data = stock_data.rename(columns={'Date': 'date'})
+            stock_data['date'] = stock_data.apply(lambda x: x['date'][:10], axis=1)
+            stock_data['date'] = pd.to_datetime(stock_data.date)
+            stock_data = stock_data.set_index('date')
+            stock_data = stock_data[['Open', 'High', 'Low', 'Close', 'Volume']]
+            self.stockcolumns = ['stock_open', 'stock_high', 'stock_low', 'stock_close', 'stock_volume']
+            stock_data.columns = self.stockcolumns
+            stock_data = stock_data.applymap(lambda x: np.log(x) if x>0 else np.nan)
+            stock_data = stock_data.dropna(axis=0)
+            stock_data = pd.merge(stock_data, pd.DataFrame({'ToDrop': [1]*self.Y.shape[0]}, index=self.Y.index), 
+                          how = 'right', left_index=True, right_index=True)
+            stock_data = stock_data.drop(columns=['ToDrop'])
+            stock_data = stock_data.fillna(method = 'ffill')
+            self.rawX.append(stock_data)
+        
     def __logTransform(self):
         self.minY = np.nanmin(self.Y.values)-1e-4
         self.Y = self.Y.applymap(lambda x: np.log(x+self.minY))
@@ -128,7 +141,6 @@ class YieldPredictor(object):
         
         oos_pred = []
         for p in range(periods):
-            print(oosX)
             pred = self.predmodel.predict(oosX)
             pred = pd.DataFrame(pred, columns=self.Y.columns)
             if self.log:
@@ -149,17 +161,20 @@ class YieldPredictor(object):
         else:
             alpha = 1.0
 
-        if self.log:
-            self.__logTransform()
-
         if kernel == 'Linear':
             self.predmodel = LinearRegression()
         elif kernel == 'LASSO':
             self.predmodel = Lasso(alpha = alpha)
         elif kernel == 'Ridge':
             self.predmodel = Ridge(alpha = alpha)
-        
+        else:
+            self.predmodel = LinearRegression()
+
+        if self.log:
+            self.__logTransform()
+
         self.X = []
+
         if 'LSCT' in self.Xlist:
             self.rawX.append(self.lscsplitter.factors)
             self.rawX = pd.concat(self.rawX, axis=1)
@@ -167,10 +182,19 @@ class YieldPredictor(object):
                 shiftXs = self.rawX.shift(lag+1)
                 shiftXs.columns = ['L{}'.format(lag+1) + x for x in shiftXs.columns]
                 self.X.append(shiftXs)
-        if self.Xlist == []:
-            self.X = [pd.DataFrame({'Const': [0]*self.Y.shape[0]}, index=self.Y.index)]
-        print(self.X)
+
+        elif self.Xlist != []:
+            self.rawX = pd.concat(self.rawX, axis=1)
+            for lag in range(self.lags):
+                shiftXs = self.rawX.shift(lag+1)
+                shiftXs.columns = ['L{}'.format(lag+1) + x for x in shiftXs.columns]
+                self.X.append(shiftXs)
+            
+        else:
+            self.X = [pd.DataFrame({'Const': [1]*self.Y.shape[0]}, index=self.Y.index)]        
+
         self.X = pd.concat(self.X, axis=1)
+
         # deal with NaN values
         self.Y = self.Y[~self.X.isna().any(axis=1)]
         self.Y = self.Y.T
@@ -179,6 +203,11 @@ class YieldPredictor(object):
         self.Y = self.Y.interpolate(method='index', axis=0, limit_direction = 'both')
         self.Y.index = maturity_names
         self.Y = self.Y.T
+
+        if 'Stock' in self.Xlist:
+            stock_data = self.rawX[self.stockcolumns][~self.X.isna().any(axis=1)]
+            self.Y = pd.concat([self.Y, stock_data], axis=1)
+        
         self.X = self.X[~self.X.isna().any(axis=1)]
         
         self.predmodel = self.predmodel.fit(X = self.X, y = self.Y)
@@ -189,26 +218,37 @@ class YieldPredictor(object):
         return self.pred
     
     def __forecastLinear(self, periods):
-        if 'LSCT' in self.Xlist:
-            oosX = pd.concat([self.lscsplitter.factors.tail(1), self.X.tail(1).iloc[:, :-4]], axis=1)
-            oosX.columns = self.X.columns
-            oosX = oosX.reset_index(drop=True)
         if  self.Xlist == []:
             oosX = self.X.tail(1)
+        else:
+            oosX = pd.concat([self.rawX.tail(1), self.X.tail(1).iloc[:, :-self.rawX.shape[1]]], axis=1)
+            oosX.columns = self.X.columns
+            oosX = oosX.reset_index(drop=True)
 
         oos_pred = []
         for p in range(periods):
-            print(oosX)
             pred = self.predmodel.predict(oosX)
             pred = pd.DataFrame(pred, columns=self.Y.columns)
-            if self.log:
-                pred = self.__expTransform(pred)
+            
             oos_pred.append(pred)
+
+            newoosX = []
+            if 'Stock' in self.Xlist:
+                stockpred = pred[self.stockcolumns]
+                newoosX.append(stockpred)
+
             if 'LSCT' in self.Xlist:
-                oosX = pd.concat([LSCTsplitter(lambdas = self.lambdas).fit(data=pred).factors, oosX.iloc[:, :-4]], axis=1)
-                oosX.columns = self.X.columns
-                oosX = oosX.reset_index(drop=True)
-        return pd.concat(oos_pred, axis=0)
+                ycpred = pred[self.columns]
+                if self.log:
+                    ycpred = self.__expTransform(ycpred)
+                newoosX.append(LSCTsplitter(lambdas = self.lambdas).fit(data=ycpred).factors)
+
+            if self.Xlist != []:
+                oosX = pd.concat(newoosX + [oosX.iloc[:, :-self.rawX.shape[1]]], axis=1)
+            oosX.columns = self.X.columns
+            oosX = oosX.reset_index(drop=True)
+        result = pd.concat(oos_pred, axis=0)
+        return result[self.columns]
 
 
     def fit(self, *args, **kwargs):
@@ -306,7 +346,7 @@ class ModelAssessor(object):
         print('#' + '-'*60 + '#')
 
 if __name__ == "__main__":
-    rwpredor = YieldPredictor('Linear LSCT' ,start='20190101')
+    rwpredor = YieldPredictor('Linear Model', Xlist=['LSCT', 'Stock'], start='20190101')
     rwpredor.fit(log = True)
     print(rwpredor.forecast(5))
 
