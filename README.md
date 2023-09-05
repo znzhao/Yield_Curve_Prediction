@@ -1,5 +1,5 @@
 # Yield Curve Predictor
-Created by Zhenning Zhao, Contact the creator at [znzhao@utexas.edu](mailto:znzhao@utexas.edu).
+Created by Zhenning Zhao. Contact the creator at [znzhao@utexas.edu](mailto:znzhao@utexas.edu).
 
 Visit the website [link](https://yield-curve-prediction.streamlit.app/) to run the yield curve predictor. Please sign in with a streamlit cloud account to visit the website. Streamlit cloud service is free.
 
