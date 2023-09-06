@@ -1,5 +1,6 @@
 streamlit
 plotly
+yfinance
 xmltodict
 pandas
 numpy
