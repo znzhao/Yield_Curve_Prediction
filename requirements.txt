@@ -1,5 +1,6 @@
 streamlit
 plotly
+github
 yfinance
 xmltodict
 pandas
