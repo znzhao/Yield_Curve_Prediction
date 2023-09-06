@@ -53,7 +53,7 @@ def createSideBar(showpred, ycdate, periods):
         lags = st.sidebar.select_slider('Lags (Days)', range(1, 11), 5, disabled = not showpred)
         logTrans = st.sidebar.toggle('Log Transform', value = False, disabled = not showpred)
         
-        Xlist = st.sidebar.multiselect('Input Variables', ['LSCT'], default = ['LSCT'], disabled = not showpred)
+        Xlist = st.sidebar.multiselect('Input Variables', ['LSCT', 'Stock', 'Inflation'], default = ['LSCT'], disabled = not showpred)
         kernel = st.sidebar.selectbox('Regression Kernel', ['Linear', 'LASSO', 'Ridge'], disabled = not showpred)
         alpha = st.sidebar.slider('Panelty ($log \\alpha$)', -5.0, 5.0, 0.0, disabled = (not showpred) or (kernel == 'Linear'))
         alpha = 10.0 ** alpha
