@@ -160,9 +160,12 @@ class LSCTsplitter(object):
         pyplot.show()
 
 if __name__ == "__main__":
-    data = loadAllYC()
+    '''
     lscsplitter = LSCTsplitter()
     lscsplitter.fit(data=data, refit=False)
     lscsplitter.inverse()
     lscsplitter.plotfactors()
-    lscsplitter.plot()
+    lscsplitter.plot()'''
+    data = loadAllYC()
+    print(data)
+    
