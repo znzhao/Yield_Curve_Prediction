@@ -41,7 +41,7 @@ def updateGit():
         # update the tyie data
         parseBreakEvenInflation(git = True)
         parseSP500(git = True)
-    logGithub(timestamp = max(ycg.index).dt)
+    logGithub(timestamp = max(ycg.index).to_pydatetime())
 
 def createDisplayer():
     with st.spinner('Check Data Updates...'):
