@@ -80,18 +80,18 @@ def createDisplayer():
     data = loadAllYC()
     mindate = min(data.index).to_pydatetime()
     maxdate = max(data.index).to_pydatetime()
-    enddate = max(data.index).to_pydatetime()
 
-    showpred = st.sidebar.toggle('Show Predictions', value = True)
     periods = st.select_slider('Forecast Period', [1, 2, 3, 4, 5], 1)
-    ycdate = st.slider('Yield Curve Date', mindate, maxdate, nextKBusinessDay(enddate, periods))
-    
-    truedata = data[data.index<=ycdate]
-    truedata = truedata.tail(1)
+    ycdate = st.slider('Yield Curve Date', mindate, nextKBusinessDay(maxdate, periods), nextKBusinessDay(maxdate, periods))
+    showpred = st.sidebar.toggle('Show Predictions', value = True, disabled = ycdate > maxdate)
+    showpred = showpred if ycdate <= maxdate else True
 
-    truedata.columns = maturities
-    truedata = truedata.T
-    truedata.columns = ['True Data']
+    if ycdate <= maxdate:
+        truedata = data[data.index<=ycdate]
+        truedata = truedata.tail(1)
+        truedata.columns = maturities
+        truedata = truedata.T
+        truedata.columns = ['True Data']
 
     try:
         preddata = createSideBar(showpred, ycdate, periods)
