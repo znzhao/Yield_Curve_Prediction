@@ -62,10 +62,10 @@ def findAllFile(base):
             yield fullname
 
 def nextBusinessDay(date):
-    if date.weekday()==4:
-        date = date+datetime.timedelta(days=3)
+    if date.weekday() == 4:
+        date = date + datetime.timedelta(days=3)
     else:
-        date = date+datetime.timedelta(days=1)
+        date = date + datetime.timedelta(days=1)
     return date
 
 def nextKBusinessDay(date, k):
