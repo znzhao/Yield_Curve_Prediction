@@ -17,7 +17,7 @@ def updateGit():
     startmm = logdate.month
     endyyyy = datetime.datetime.now().year
     endmm = datetime.datetime.now().month
-    if logdate.date() < datetime.datetime.now().date():
+    if logdate.date() <= datetime.datetime.now().date():
         # update the yield curve data
         ycg = loadAllYC()
         for yyyy in range(startyyyy, endyyyy+1):
@@ -41,14 +41,13 @@ def updateGit():
         # update the tyie data
         parseBreakEvenInflation(git = True)
         parseSP500(git = True)
-    logGithub()
+    logGithub(timestamp = max(ycg.index).dt)
 
 def createDisplayer():
     with st.spinner('Check Data Updates...'):
         updateGit()
     st.title("U.S. Treasury Bond Time Series")
     data = loadAllYC()
-    print(data)
     mindate = min(data.index).to_pydatetime()
     maxdate = max(data.index).to_pydatetime()
     startdate = max(data.index).to_pydatetime() - datetime.timedelta(weeks=52*10)

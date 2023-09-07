@@ -10,8 +10,6 @@ from helper.ycpredictor import createYieldPredictor
 import matplotlib.pyplot as pyplot
 maturities = ['1 Month', '2 Month', '3 Month', '4 Month', '6 Month', '1 Year', '2 Year', '3 Year', '5 Year', '7 Year', '10 Year', '20 Year', '30 Year',]
 
-
-
 def createSideBar(showpred, ycdate, periods):
     pred = st.sidebar.selectbox('Prediction Model', ['Random Walk', 'Lagged LSCT', 'Linear LSCT', 'Linear Model'], disabled = not showpred)
     if pred == 'Random Walk':
@@ -60,6 +58,7 @@ def createSideBar(showpred, ycdate, periods):
         kernel = st.sidebar.selectbox('Regression Kernel', ['Linear', 'LASSO', 'Ridge'], disabled = not showpred)
         alpha = st.sidebar.slider('Panelty ($log \\alpha$)', -5.0, 5.0, 0.0, disabled = (not showpred) or (kernel == 'Linear'))
         alpha = 10.0 ** alpha
+        
         with st.sidebar:
             with st.spinner('Model Refitting...'):
                 YieldPredictor = createYieldPredictor('Linear Model')
@@ -86,12 +85,13 @@ def createDisplayer():
     showpred = st.sidebar.toggle('Show Predictions', value = True, disabled = ycdate > maxdate)
     showpred = showpred if ycdate <= maxdate else True
 
-    if ycdate <= maxdate:
-        truedata = data[data.index<=ycdate]
-        truedata = truedata.tail(1)
-        truedata.columns = maturities
-        truedata = truedata.T
-        truedata.columns = ['True Data']
+    truedata = data[data.index<=ycdate]
+    truedata = truedata.tail(1)
+    truedata.columns = maturities
+    truedata = truedata.T
+    truedata.columns = ['True Data']
+    if ycdate > maxdate:
+        truedata = truedata.applymap(lambda x: np.nan)
 
     try:
         preddata = createSideBar(showpred, ycdate, periods)

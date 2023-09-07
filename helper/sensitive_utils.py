@@ -27,11 +27,11 @@ def publishData(base):
         print('Publishing file {}...'.format(f)+' '*20, end='\r')
     print('Done!' + ' '*20)
 
-def logGithub():
+def logGithub(timestamp):
     g = Github(githubToken)
     repo = g.get_repo('znzhao/Yield_Curve_Prediction')
     path = 'MktData/log.txt'
-    logs = str(datetime.datetime.now().date())
+    logs = min(str(datetime.datetime.now().date()), str(timestamp.date()))
     try:
         sha = repo.get_contents(path, ref='main').sha
         repo.update_file(path = path, message = 'update file {}'.format(path), content = logs, branch = 'main', sha = sha)
@@ -44,7 +44,7 @@ def getLog():
         response = str(requests.get(logpath).content)
         logdate = datetime.datetime.strptime(re.findall(r'[\d-]+', response)[0], '%Y-%m-%d')
     except:
-        logdate = datetime.datetime.strptime('2023-08-25', '%Y-%m-%d')
+        logdate = datetime.datetime.strptime('2023-09-01', '%Y-%m-%d')
     return logdate
 
 def pushToGithub(path, content):
