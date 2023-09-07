@@ -4,6 +4,7 @@ import numpy as np
 import streamlit as st
 import plotly.express as px
 import pandas as pd
+from helper.utils import nextKBusinessDay
 from helper.lsctsplitter import loadAllYC
 from helper.ycpredictor import createYieldPredictor
 import matplotlib.pyplot as pyplot
@@ -83,7 +84,7 @@ def createDisplayer():
 
     showpred = st.sidebar.toggle('Show Predictions', value = True)
     periods = st.select_slider('Forecast Period', [1, 2, 3, 4, 5], 1)
-    ycdate = st.slider('Yield Curve Date', mindate, maxdate, enddate)
+    ycdate = st.slider('Yield Curve Date', mindate, maxdate, nextKBusinessDay(enddate, periods))
     
     truedata = data[data.index<=ycdate]
     truedata = truedata.tail(1)

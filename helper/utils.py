@@ -1,6 +1,7 @@
 import os
 import time
 import numpy as np
+import datetime
 
 maturities = [1/12, 2/12, 3/12, 4/12, 6/12, 1, 2, 3, 5, 7, 10, 20, 30]
 
@@ -59,6 +60,19 @@ def findAllFile(base):
             fullname = os.path.join(root, f)
             fullname = fullname.replace("\\","/")
             yield fullname
+
+def nextBusinessDay(date):
+    if date.weekday()==4:
+        date = date+datetime.timedelta(date=3)
+    else:
+        date = date+datetime.timedelta(days=1)
+    return date
+
+def nextKBusinessDay(date, k):
+    if k == 1:
+        return nextBusinessDay(date)
+    else:
+        return nextKBusinessDay(nextBusinessDay(date), k-1)
 
 if __name__ == "__main__":
     print('Data Tools loaded.')

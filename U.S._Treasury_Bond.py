@@ -12,14 +12,12 @@ from helper.sensitive_utils import getLog, pushToGithub, logGithub
 maturities = ['1 Month', '2 Month', '3 Month', '4 Month', '6 Month', '1 Year', '2 Year', '3 Year', '5 Year', '7 Year', '10 Year', '20 Year', '30 Year',]
 
 def updateGit():
-    print('hello')
     logdate = getLog()
-
     startyyyy = logdate.year
     startmm = logdate.month
     endyyyy = datetime.datetime.now().year
     endmm = datetime.datetime.now().month
-    if logdate.date() != datetime.datetime.now().date():
+    if logdate.date() < datetime.datetime.now().date():
         # update the yield curve data
         ycg = loadAllYC()
         for yyyy in range(startyyyy, endyyyy+1):
