@@ -51,7 +51,6 @@ def createDisplayer():
     mindate = min(data.index).to_pydatetime()
     maxdate = max(data.index).to_pydatetime()
     startdate = max(data.index).to_pydatetime() - datetime.timedelta(weeks=52*10)
-    middate = max(data.index).to_pydatetime() - datetime.timedelta(weeks=52*5)
     enddate = max(data.index).to_pydatetime()
     
     DateRange = st.slider('Yield Curve Date Range', mindate, maxdate, (startdate, enddate))
@@ -83,6 +82,6 @@ def createDisplayer():
                 ##### Data Source
                 - U.S. Department of the Treasury :link: [link](https://home.treasury.gov/policy-issues/financing-the-government/interest-rate-statistics)
                 ''')
-                
+
 if __name__ == "__main__":
     createDisplayer()
