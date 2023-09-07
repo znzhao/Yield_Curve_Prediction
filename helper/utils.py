@@ -63,7 +63,7 @@ def findAllFile(base):
 
 def nextBusinessDay(date):
     if date.weekday()==4:
-        date = date+datetime.timedelta(date=3)
+        date = date+datetime.timedelta(days=3)
     else:
         date = date+datetime.timedelta(days=1)
     return date
