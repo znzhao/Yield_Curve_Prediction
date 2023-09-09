@@ -7,7 +7,7 @@ import pandas as pd
 from helper.utils import nextKBusinessDay
 from helper.lsctsplitter import loadAllYC
 from helper.ycpredictor import createYieldPredictor
-import matplotlib.pyplot as pyplot
+
 maturities = ['1 Month', '2 Month', '3 Month', '4 Month', '6 Month', '1 Year', '2 Year', '3 Year', '5 Year', '7 Year', '10 Year', '20 Year', '30 Year',]
 
 def createSideBar(showpred, ycdate, periods):
