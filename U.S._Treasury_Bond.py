@@ -44,8 +44,8 @@ def updateGit():
     logGithub(timestamp = max(ycg.index).to_pydatetime())
 
 def createDisplayer():
-    with st.spinner('Check Data Updates...'):
-        updateGit()
+    #with st.spinner('Check Data Updates...'):
+    #    updateGit()
     st.title("U.S. Treasury Bond Time Series")
     data = loadAllYC()
     mindate = min(data.index).to_pydatetime()
