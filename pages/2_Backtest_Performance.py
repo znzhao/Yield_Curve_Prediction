@@ -106,7 +106,7 @@ def createDisplayer():
     resdata = pd.concat([basermetric, modelmetric], axis = 0)
     resdata = resdata.reset_index(names = 'Maturities')
     
-    colorlist = ['#2196F3', '#F44336', ]
+    colorlist = ['#58508d', '#bc5090', ]
     fig = px.bar(resdata, x = 'Maturities', y = 'Metrics', color_discrete_sequence = colorlist[:len(resdata.columns)], color='Model Type', barmode='group',)
     fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
     st.plotly_chart(fig)
