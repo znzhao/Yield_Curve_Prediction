@@ -119,7 +119,7 @@ def createDisplayer():
         preddatas.index = st.session_state.truedatas.index
         truedatas = pd.DataFrame({'Baseline': np.cumsum(truedatas.values)})
         truedatas.index = st.session_state.truedatas.index
-        resdata = pd.concat([preddatas, truedatas], axis = 1)
+        resdata = pd.concat([truedatas, preddatas], axis = 1)
         colorlist = ['#58508d', '#bc5090', ]
         fig = px.line(resdata, 
                       color_discrete_sequence = colorlist[:len(resdata.columns)],
@@ -129,8 +129,6 @@ def createDisplayer():
                              })
         fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
         st.plotly_chart(fig)
-        
-
 
 if __name__ == "__main__":
     createDisplayer()
