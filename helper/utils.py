@@ -74,5 +74,27 @@ def nextKBusinessDay(date, k):
     else:
         return nextKBusinessDay(nextBusinessDay(date), k-1)
 
+def maxDrawDown(data):
+    max_so_far = data[0]
+    drawdowns = []
+    for x in data:
+        max_so_far = max(max_so_far, x)
+        drawdowns.append(max_so_far - x) 
+    return max(drawdowns)
+
+def sortinoErr(data):
+    err = []
+    for x1, x0 in zip(data[1:], data[:-1]):
+        err.append(min(x1 - x0, 0))
+    return np.std(err)
+
+def calPnLs(data):
+    return data[-1] - data[0]
+
+def calSortino(data):
+    PnLs = calPnLs(data)
+    err = sortinoErr(data)
+    return PnLs / err
+
 if __name__ == "__main__":
     print('Data Tools loaded.')

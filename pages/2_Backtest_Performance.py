@@ -4,7 +4,7 @@ import numpy as np
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from helper.utils import nextKBusinessDay
+from helper.utils import maxDrawDown, calSortino
 from helper.lsctsplitter import loadAllYC
 from helper.ycpredictor import createYieldPredictor
 from predictors.modelcontroller import *
@@ -77,7 +77,7 @@ def createDisplayer():
         st.session_state['basedatas'] = basedatas
 
 
-    metric_type = st.selectbox('Metrics', ['Direction Accuracy', 'Mean Squared Error', 'R Squared', 'Profit and Losses (PnLs)'])
+    metric_type = st.selectbox('Metrics', ['Direction Accuracy', 'Mean Squared Error', 'R Squared', 'Profit and Losses (PnLs)', 'Sortino Ratio', 'Max Drawdown'])
     
     if metric_type == 'Direction Accuracy' or metric_type == 'Mean Squared Error' or metric_type == 'R Squared':
         modelmetric = []
@@ -127,6 +127,29 @@ def createDisplayer():
                               "value": "Percent (%)",
                               "date": "Date",
                              })
+        fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
+        st.plotly_chart(fig)
+
+    elif metric_type == 'Sortino Ratio':
+        resdatas = {}
+        for col in st.session_state.truedatas.columns:
+            truedatas = st.session_state.truedatas[col] - st.session_state.basedatas[col]
+            preddatas = np.sign(st.session_state.preddatas[col] - st.session_state.basedatas[col])
+            preddatas = pd.DataFrame({'Model': np.cumsum(preddatas * truedatas.values)})
+            preddatas.index = st.session_state.truedatas.index
+            truedatas = pd.DataFrame({'Baseline': np.cumsum(truedatas.values)})
+            truedatas.index = st.session_state.truedatas.index
+            resdata = pd.concat([truedatas, preddatas], axis = 1)
+            resdatas[col] = [calSortino(resdata['Baseline'].tolist()), calSortino(resdata['Model'].tolist())]
+        resdata = pd.DataFrame(resdatas).T
+
+        basedatas = pd.DataFrame(resdata['Baseline'])
+        st.dataframe(basedatas)
+        preddatas = pd.DataFrame(resdata['Model'])
+        st.dataframe(preddatas)
+        
+        colorlist = ['#58508d', '#bc5090', ]
+        fig = px.bar(resdata, x = 'Maturities', y = 'Metrics', color_discrete_sequence = colorlist[:len(resdata.columns)], color='Model Type', barmode='group',)
         fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
         st.plotly_chart(fig)
 
