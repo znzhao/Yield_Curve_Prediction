@@ -141,13 +141,13 @@ def createDisplayer():
             truedatas.index = st.session_state.truedatas.index
             resdata = pd.concat([truedatas, preddatas], axis = 1)
             resdatas[col] = [calSortino(resdata['Baseline'].tolist()), calSortino(resdata['Model'].tolist())]
-        resdata = pd.DataFrame(resdatas).T
+        resdata = pd.DataFrame(resdatas)
 
         basedatas = pd.DataFrame(resdata['Baseline'])
         st.dataframe(basedatas)
         preddatas = pd.DataFrame(resdata['Model'])
         st.dataframe(preddatas)
-        
+
         colorlist = ['#58508d', '#bc5090', ]
         fig = px.bar(resdata, x = 'Maturities', y = 'Metrics', color_discrete_sequence = colorlist[:len(resdata.columns)], color='Model Type', barmode='group',)
         fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
