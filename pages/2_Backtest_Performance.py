@@ -76,7 +76,7 @@ def createDisplayer():
         st.session_state['basedatas'] = basedatas
 
 
-    metric_type = st.selectbox('Metrics', ['Direction Accuracy', 'Mean Squared Error', 'R Squared', 'Profit and Losses (PnLs)', 'Sortino Ratio', 'Max Drawdown'])
+    metric_type = st.selectbox('Metrics', ['Direction Accuracy', 'Mean Squared Error', 'R Squared', 'Profit and Losses (PnLs)', 'Sortino Ratio', 'Max Drawdown', 'Max Drawup'])
     
     if metric_type == 'Direction Accuracy' or metric_type == 'Mean Squared Error' or metric_type == 'R Squared':
         modelmetric = []
