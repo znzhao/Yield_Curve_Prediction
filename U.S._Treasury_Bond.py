@@ -61,7 +61,7 @@ def createDisplayer():
         columns.append(st.sidebar.checkbox(m, value = True))
     
     st.sidebar.divider()
-    st.sidebar.markdown('''Created by Zhenning Zhao :link:[Website](https://znzhao.github.io/)''')
+    st.sidebar.markdown('''Created by Zhenning Zhao :link:[Website](https://sites.google.com/utexas.edu/zhenning-zhao/about)''')
     
     dispdata = data[(data.index >= DateRange[0]) & (data.index <= DateRange[1])]
     dispdata.columns = maturities
