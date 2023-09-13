@@ -129,7 +129,7 @@ def createDisplayer():
         fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
         st.plotly_chart(fig)
 
-    elif metric_type == 'Sortino Ratio':
+    elif metric_type == 'Sortino Ratio' or metric_type == 'Max Drawdown' or metric_type == 'Max Drawup':
         resdatas = {}
         for col in st.session_state.truedatas.columns:
             truedatas = st.session_state.truedatas[col] - st.session_state.basedatas[col]
