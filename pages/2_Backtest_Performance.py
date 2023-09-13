@@ -115,16 +115,18 @@ def createDisplayer():
         col = st.selectbox('Maturities', maturities)
         truedatas = st.session_state.truedatas[col] - st.session_state.basedatas[col]
         preddatas = np.sign(st.session_state.preddatas[col] - st.session_state.basedatas[col])
-        st.dataframe(preddatas)
         preddatas = pd.DataFrame({'Model': np.cumsum(preddatas * truedatas.values)})
         preddatas.index = st.session_state.truedatas.index
-        st.dataframe(preddatas)
         truedatas = pd.DataFrame({'Baseline': np.cumsum(truedatas.values)})
         truedatas.index = st.session_state.truedatas.index
         resdata = pd.concat([preddatas, truedatas], axis = 1)
-        st.dataframe(resdata)
         colorlist = ['#58508d', '#bc5090', ]
-        fig = px.line(resdata, color_discrete_sequence = colorlist[:len(resdata.columns)])
+        fig = px.line(resdata, 
+                      color_discrete_sequence = colorlist[:len(resdata.columns)],
+                      labels={
+                              "value": "Percent (%)",
+                              "date": "Date",
+                             })
         fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
         st.plotly_chart(fig)
         
