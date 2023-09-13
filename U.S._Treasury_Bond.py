@@ -66,7 +66,7 @@ def createDisplayer():
     dispdata = data[(data.index >= DateRange[0]) & (data.index <= DateRange[1])]
     dispdata.columns = maturities
     dispcol = [dispdata.columns[i] for i, x in enumerate(columns) if x]
-    colorlist = [interpolateColor('#FFC0C0','#E84444', i) for i in np.linspace(0,1,sum(columns))]
+    colorlist = [interpolateColor('#183D3D','#93B1A6', i) for i in np.linspace(0,1,sum(columns))]
     fig = px.line(
         dispdata, 
         y = dispcol,
