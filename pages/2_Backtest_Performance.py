@@ -145,7 +145,6 @@ def createDisplayer():
                 metricfunc = maxDrawDown
             elif metric_type == 'Max Drawup':
                 metricfunc = maxDrawUp
-                
             resdatas[col] = [metricfunc(resdata['Baseline'].tolist()), metricfunc(resdata['Model'].tolist())]
         resdata = pd.DataFrame(resdatas, index=['Baseline', 'Model']).T
 
