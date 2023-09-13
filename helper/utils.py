@@ -82,6 +82,14 @@ def maxDrawDown(data):
         drawdowns.append(max_so_far - x) 
     return max(drawdowns)
 
+def maxDrawUp(data):
+    min_so_far = data[0]
+    drawdowns = []
+    for x in data:
+        min_so_far = min(min_so_far, x)
+        drawdowns.append(x - min_so_far) 
+    return max(drawdowns)
+
 def sortinoErr(data):
     err = []
     for x1, x0 in zip(data[1:], data[:-1]):

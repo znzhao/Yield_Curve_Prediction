@@ -4,9 +4,8 @@ import numpy as np
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from helper.utils import maxDrawDown, calSortino
+from helper.utils import maxDrawDown, maxDrawUp, calSortino
 from helper.lsctsplitter import loadAllYC
-from helper.ycpredictor import createYieldPredictor
 from predictors.modelcontroller import *
 from sklearn.metrics import r2_score, mean_squared_error, accuracy_score
 
@@ -140,7 +139,14 @@ def createDisplayer():
             truedatas = pd.DataFrame({'Baseline': np.cumsum(truedatas.values)})
             truedatas.index = st.session_state.truedatas.index
             resdata = pd.concat([truedatas, preddatas], axis = 1)
-            resdatas[col] = [calSortino(resdata['Baseline'].tolist()), calSortino(resdata['Model'].tolist())]
+            if metric_type == 'Sortino Ratio':
+                metricfunc = calSortino
+            elif metric_type == 'Max Drawdown':
+                metricfunc = maxDrawDown
+            elif metric_type == 'Max Drawup':
+                metricfunc = maxDrawUp
+                
+            resdatas[col] = [metricfunc(resdata['Baseline'].tolist()), metricfunc(resdata['Model'].tolist())]
         resdata = pd.DataFrame(resdatas, index=['Baseline', 'Model']).T
 
         basedatas = pd.DataFrame(resdata['Baseline'])
