@@ -144,10 +144,13 @@ def createDisplayer():
         resdata = pd.DataFrame(resdatas, index=['Baseline', 'Model']).T
 
         basedatas = pd.DataFrame(resdata['Baseline'])
-        st.dataframe(basedatas)
+        basedatas.columns = ['Metrics']
+        basedatas['Model Type'] = 'Baseline'
         preddatas = pd.DataFrame(resdata['Model'])
-        st.dataframe(preddatas)
-
+        preddatas.columns = ['Metrics']
+        preddatas['Model Type'] = 'Model'
+        resdata = pd.concat([basedatas,preddatas], axis = 0)
+        resdata = resdata.reset_index(drop=False, names='Maturities')
         colorlist = ['#58508d', '#bc5090', ]
         fig = px.bar(resdata, x = 'Maturities', y = 'Metrics', color_discrete_sequence = colorlist[:len(resdata.columns)], color='Model Type', barmode='group',)
         fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
