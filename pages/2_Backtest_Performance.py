@@ -77,39 +77,52 @@ def createDisplayer():
         st.session_state['basedatas'] = basedatas
 
 
-    metric_type = st.selectbox('Metrics', ['Direction Accuracy', 'Mean Squared Error', 'R Squared', ])
+    metric_type = st.selectbox('Metrics', ['Direction Accuracy', 'Mean Squared Error', 'R Squared', 'Profit and Losses (PnLs)'])
     
-    modelmetric = []
-    basermetric = []
-    for col in st.session_state.truedatas.columns:
-        if metric_type == 'Direction Accuracy':
-            truedatas = np.sign(st.session_state.truedatas[col] - st.session_state.basedatas[col])
-            preddatas = np.sign(st.session_state.preddatas[col] - st.session_state.basedatas[col])
-            basedatas = np.sign(st.session_state.basedatas[col] - st.session_state.basedatas[col])    
-            modelmetric.append(accuracy_score(truedatas, preddatas))
-            basermetric.append(accuracy_score(truedatas, basedatas))
-        elif metric_type == 'Mean Squared Error':
-            modelmetric.append(mean_squared_error(st.session_state.truedatas[col], st.session_state.preddatas[col]))
-            basermetric.append(mean_squared_error(st.session_state.truedatas[col], st.session_state.basedatas[col]))
-        elif metric_type == 'R Squared':
-            truedatas = (st.session_state.truedatas[col] - st.session_state.basedatas[col])
-            preddatas = (st.session_state.preddatas[col] - st.session_state.basedatas[col])
-            basedatas = (st.session_state.basedatas[col] - st.session_state.basedatas[col])  
-            modelmetric.append(r2_score(truedatas, preddatas))
-            basermetric.append(r2_score(truedatas, basedatas))
-            
-    
-    modelmetric = pd.DataFrame({'Metrics':modelmetric}, index = maturities)
-    modelmetric['Model Type'] = 'Model'
-    basermetric = pd.DataFrame({'Metrics':basermetric}, index = maturities)
-    basermetric['Model Type'] = 'Baseline'
-    resdata = pd.concat([basermetric, modelmetric], axis = 0)
-    resdata = resdata.reset_index(names = 'Maturities')
-    
-    colorlist = ['#58508d', '#bc5090', ]
-    fig = px.bar(resdata, x = 'Maturities', y = 'Metrics', color_discrete_sequence = colorlist[:len(resdata.columns)], color='Model Type', barmode='group',)
-    fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
-    st.plotly_chart(fig)
+    if metric_type == 'Direction Accuracy' or metric_type == 'Mean Squared Error' or metric_type == 'R Squared':
+        modelmetric = []
+        basermetric = []
+        for col in st.session_state.truedatas.columns:
+            if metric_type == 'Direction Accuracy':
+                truedatas = np.sign(st.session_state.truedatas[col] - st.session_state.basedatas[col])
+                preddatas = np.sign(st.session_state.preddatas[col] - st.session_state.basedatas[col])
+                basedatas = np.sign(st.session_state.basedatas[col] - st.session_state.basedatas[col])    
+                modelmetric.append(accuracy_score(truedatas, preddatas))
+                basermetric.append(accuracy_score(truedatas, basedatas))
+            elif metric_type == 'Mean Squared Error':
+                modelmetric.append(mean_squared_error(st.session_state.truedatas[col], st.session_state.preddatas[col]))
+                basermetric.append(mean_squared_error(st.session_state.truedatas[col], st.session_state.basedatas[col]))
+            elif metric_type == 'R Squared':
+                truedatas = (st.session_state.truedatas[col] - st.session_state.basedatas[col])
+                preddatas = (st.session_state.preddatas[col] - st.session_state.basedatas[col])
+                basedatas = (st.session_state.basedatas[col] - st.session_state.basedatas[col])  
+                modelmetric.append(r2_score(truedatas, preddatas))
+                basermetric.append(r2_score(truedatas, basedatas))
+        
+        modelmetric = pd.DataFrame({'Metrics':modelmetric}, index = maturities)
+        modelmetric['Model Type'] = 'Model'
+        basermetric = pd.DataFrame({'Metrics':basermetric}, index = maturities)
+        basermetric['Model Type'] = 'Baseline'
+        resdata = pd.concat([basermetric, modelmetric], axis = 0)
+        resdata = resdata.reset_index(names = 'Maturities')
+        
+        colorlist = ['#58508d', '#bc5090', ]
+        fig = px.bar(resdata, x = 'Maturities', y = 'Metrics', color_discrete_sequence = colorlist[:len(resdata.columns)], color='Model Type', barmode='group',)
+        fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
+        st.plotly_chart(fig)
+
+    elif metric_type == 'Profit and Losses (PnLs)':
+        col = st.selectbox('Maturities', maturities)
+        truedatas = st.session_state.truedatas[col] - st.session_state.basedatas[col]
+        preddatas = np.sign(st.session_state.preddatas[col] - st.session_state.basedatas[col])
+        preddatas = pd.DataFrame({'Model': np.cumsum(preddatas.values * truedatas.values)})
+        truedatas = pd.DataFrame({'Baseline': np.cumsum(truedatas.values)})
+        resdata = pd.concat([preddatas, truedatas], axis = 1)
+        colorlist = ['#58508d', '#bc5090', ]
+        fig = px.line(resdata, color_discrete_sequence = colorlist[:len(resdata.columns)])
+        fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
+        st.plotly_chart(fig)
+        
 
 
 if __name__ == "__main__":
