@@ -105,7 +105,7 @@ def createDisplayer():
         resdata = pd.concat([basermetric, modelmetric], axis = 0)
         resdata = resdata.reset_index(names = 'Maturities')
         
-        colorlist = ['#FAF1E4', '#CEDEBD', ]
+        colorlist = ['#9EB384', '#435334', ]
         fig = px.bar(resdata, x = 'Maturities', y = 'Metrics', color_discrete_sequence = colorlist[:len(resdata.columns)], color='Model Type', barmode='group',)
         fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
         st.plotly_chart(fig)
@@ -119,7 +119,7 @@ def createDisplayer():
         truedatas = pd.DataFrame({'Baseline': np.cumsum(truedatas.values)})
         truedatas.index = st.session_state.truedatas.index
         resdata = pd.concat([truedatas, preddatas], axis = 1)
-        colorlist = ['#FAF1E4', '#CEDEBD', ]
+        colorlist = ['#9EB384', '#435334', ]
         fig = px.line(resdata, 
                       color_discrete_sequence = colorlist[:len(resdata.columns)],
                       labels={
@@ -156,7 +156,7 @@ def createDisplayer():
         preddatas['Model Type'] = 'Model'
         resdata = pd.concat([basedatas,preddatas], axis = 0)
         resdata = resdata.reset_index(drop=False, names='Maturities')
-        colorlist = ['#FAF1E4', '#CEDEBD', ]
+        colorlist = ['#9EB384', '#435334', ]
         fig = px.bar(resdata, x = 'Maturities', y = 'Metrics', color_discrete_sequence = colorlist[:len(resdata.columns)], color='Model Type', barmode='group',)
         fig.update_layout(legend=dict(title = None, orientation="h", yanchor="bottom", y=-0.3, xanchor="center", x = 0.5))
         st.plotly_chart(fig)
