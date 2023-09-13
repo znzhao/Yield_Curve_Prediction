@@ -118,6 +118,7 @@ def createDisplayer():
         preddatas = pd.DataFrame({'Model': np.cumsum(preddatas * truedatas.values)})
         truedatas = pd.DataFrame({'Baseline': np.cumsum(truedatas.values)})
         resdata = pd.concat([preddatas, truedatas], axis = 1)
+        print(resdata)
         resdata.index = st.session_state.truedatas.index
         colorlist = ['#58508d', '#bc5090', ]
         fig = px.line(resdata, color_discrete_sequence = colorlist[:len(resdata.columns)])
