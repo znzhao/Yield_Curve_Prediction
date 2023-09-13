@@ -42,7 +42,7 @@ def createDisplayer():
         dispdata = pd.merge(truedata, preddata, left_index=True, right_index=True)
     else:
         dispdata = truedata
-    colorlist = ['#183D3D', '#5C8374', ]
+    colorlist = ['#9EB384', '#512B81', ]
     fig = px.line(
         dispdata,
         markers='o',
