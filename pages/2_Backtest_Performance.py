@@ -115,7 +115,7 @@ def createDisplayer():
         col = st.selectbox('Maturities', maturities)
         truedatas = st.session_state.truedatas[col] - st.session_state.basedatas[col]
         preddatas = np.sign(st.session_state.preddatas[col] - st.session_state.basedatas[col])
-        preddatas = pd.DataFrame({'Model': np.cumsum(preddatas.values * truedatas.values)})
+        preddatas = pd.DataFrame({'Model': np.cumsum(preddatas * truedatas.values)})
         truedatas = pd.DataFrame({'Baseline': np.cumsum(truedatas.values)})
         resdata = pd.concat([preddatas, truedatas], axis = 1)
         colorlist = ['#58508d', '#bc5090', ]
